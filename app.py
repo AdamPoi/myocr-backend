@@ -2,7 +2,7 @@ from fastapi import FastAPI, File, UploadFile,Path
 from fastapi.responses import FileResponse
 import uuid
 import io
-from cv2 import imwrite
+
 
 import preprocessing
 
@@ -28,8 +28,6 @@ async def upload_ktp_image(ktp_img: UploadFile = File(...)):
       with open(file_location, "wb+") as file_object:
         foto_wajah,ktp_roi = preprocessing.preprocessing_image(ktp_img)
         KTP_DATA.cardPhotoUrl=foto_wajah
-        for i,p in enumerate(ktp_roi):
-          imwrite(f"{f"{KTP_PATH}/{i}-{file_name}"}",p)
 
         return {"info": f"file '{file_name}' saved at '{KTP_DATA.cardPhotoUrl}'"}
     

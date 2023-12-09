@@ -6,10 +6,9 @@ import uuid
 import io
 import os
 
+from models import KTPImg,KTPData
 
 import preprocessing
-
-from models import KTPImg,KTPData
 
 
 app = FastAPI()

@@ -7,24 +7,24 @@ class KTPImg(BaseModel):
 class KTPData(BaseModel):
     # id:str
     # cardImageUrl:str
-    cardPhotoUrl:str
-    # nik:str
-    # name:str
-    # birthPlace:str
-    # birthDate:str
-    # gender:str
-    # bloodType:str
-    # streetAdress:str
-    # rtNumber:str
-    # rwNumber:str
+    cardPhoto:bytes or null
+    nik:str or null or null
+    name:str or null
+    # birthPlace:str or null
+    # birthDate:str or null
+    # gender:str or null
+    # bloodType:str or null
+    # streetAdress:str or null
+    # rtNumber:str or null
+    # rwNumber:str or null
     # # keluarahan/desa
-    # village:str
+    # village:str or null
     # # kecamatan
-    # subDistrict:str
+    # subDistrict:str or null
     # # kabupaten/kota
-    # district:str
-    # religion:str
-    # maritalStatus:str
-    # job:str
-    # nationality:str
-    # validUntil:str
+    # district:str or null
+    # religion:str or null
+    # maritalStatus:str or null
+    # job:str or null
+    # nationality:str or null
+    # validUntil:str or null

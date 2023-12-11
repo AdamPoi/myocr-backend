@@ -5,8 +5,12 @@ from uvicorn import run
 import uuid
 import io
 import os
+import cv2
+
+
 
 from models import KTPImg,KTPData
+from recognition import get_ktp_data
 
 import preprocessing
 
@@ -39,12 +43,16 @@ async def upload_ktp_image(ktp_img: UploadFile = File(...)):
     else:
       file_name = f"ktp-{uuid.uuid1()}.{ktp_img.filename.split('.')[-1]}"
       file_location = f"{KTP_PATH}/{file_name}"
+      # cv2.imwrite(file_location, ktp_img.file.read())
+      foto_wajah,ktp_roi = preprocessing.preprocessing_image(ktp_img)
+      KTP_DATA.cardPhotoUrl=foto_wajah
+      text_roi = get_ktp_data(ktp_roi)
+      data_ktp:KTPData =KTPData(nik=text_roi[0],name=text_roi[1],cardPhoto=foto_wajah)
+            
+      # with open(file_location, "wb+") as file_object:
+       
 
-      with open(file_location, "wb+") as file_object:
-        foto_wajah,ktp_roi = preprocessing.preprocessing_image(ktp_img)
-        KTP_DATA.cardPhotoUrl=foto_wajah
-
-        return {"info": f"file '{file_name}' saved at '{KTP_DATA.cardPhotoUrl}'"}
+      return {"info": data_ktp}
     
 
 @app.get("/ktp/image")

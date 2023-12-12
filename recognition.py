@@ -1,9 +1,8 @@
 from tensorflow.keras.models import load_model
-import imutils
-from imutils import contours
+from imutils import contours,grab_contours
 import cv2
 import numpy as np
-import uuid
+# import uuid
 
 
 MODEL_PATH = "models/custom_ocr_4_20ep_94_model"
@@ -23,43 +22,52 @@ CLASS_MAPPING = [
 model = load_model(MODEL_PATH)
 recognition_results = []
 
-def get_ktp_data(ktp_roi):
-  for roi in ktp_roi:
-    padded = cv2.copyMakeBorder(roi, 8, 8, 8, 8, cv2.BORDER_CONSTANT)
-    cv2.imwrite(f'images/ktp/img-{uuid.uuid1()}.jpg',padded)
+def recognize_ktp(ktp_roi):
+  for i,roi in enumerate(ktp_roi):
+    padded = cv2.copyMakeBorder(roi, 12, 12, 12, 12, cv2.BORDER_CONSTANT)
+  
+    #split gender and blood type
+    if(i == 5):
+      text_roi = grab_text(padded,1)
+      pred = recognize_text(text_roi)
+      recognition_results.append(pred)
     
-    # padded = imutils.resize(padded,width=roi.shape[1] * 2)
-    pred = get_text_roi(padded)
+    text_roi = grab_text(padded,-1)
+    pred = recognize_text(text_roi)
     print(pred)
     recognition_results.append(pred)
   return recognition_results
 
-def get_text_roi(image):
-  text_roi=[]
-  cnts = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-  cnts = imutils.grab_contours(cnts)
+def recognize_text(text_roi):
+  text=[]
+  cnts = cv2.findContours(text_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+  cnts = grab_contours(cnts)
   cnts = contours.sort_contours(cnts, method="left-to-right")[0]
 
   for cnt in cnts:
         x, y, w, h = cv2.boundingRect(cnt)
         if(w > 14 and h > 14):
-          padded = cv2.copyMakeBorder(image[y:y+h, x:x+w],12,12,12,12, cv2.BORDER_CONSTANT)
-
-          # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
-          # padded = cv2.erode(padded,kernel)
+          padded = cv2.copyMakeBorder(text_roi[y:y+h, x:x+w],6,6,6,6, cv2.BORDER_CONSTANT)
           padded = cv2.resize(padded,(28,28))
-          # padded = 255 - padded
-          # cv2_imshow(padded)
+
           pad = np.array(padded)
           pad = pad / 255.0
           pad_vector = pad.reshape((-1, 1))
           padded = pad_vector.reshape(-1, 28, 28, 1)
 
           pred = model.predict(padded)
-          # pred_conf = np.amax(pred)
           pred_index = np.argmax(pred)
-          # print(f'model 1 - pred idx: {pred_index}')
-          # print(f'model 1 - pred conf: {pred_conf}')
-          # print(f'model 1 - pred label: {class_mapping[pred_index]}')
-          text_roi.append(f'{CLASS_MAPPING[pred_index]}')
-  return ''.join(text_roi)
+          text.append(f'{CLASS_MAPPING[pred_index]}')
+  return ''.join(text)
+
+def grab_text(ktp_roi,index):
+  rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (20,20))
+  dlt = cv2.dilate(ktp_roi, rect_kernel, iterations = 1)
+
+  cnts = cv2.findContours(dlt, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+  cnts = grab_contours(cnts)
+  cnts = contours.sort_contours(cnts, method="left-to-right")[0]
+  x, y, w, h = cv2.boundingRect(cnts[index])
+  # cv2.imwrite(f'images/ktp/{uuid.uuid1()}.jpg',ktp_roi[y:y+h, x:x+w])
+
+  return ktp_roi[y:y+h, x:x+w]

@@ -1,15 +1,15 @@
-FROM python:3.11.7
-# FROM python:3.10.12
+# FROM python:3.11.7-slim
+FROM python:3.10.12-slim
 
 # Maintainer info
 LABEL maintainer="neko.liyuu@gmail.com"
 
 # Make working directories
-RUN  mkdir -p  /myocr-backend-api
+RUN  mkdir -p /myocr-backend-api
 WORKDIR  /myocr-backend-api
 
 # Upgrade pip with no cache
-# RUN pip install --no-cache-dir -U pip
+RUN python -m pip install --no-cache-dir -U pip
 
 # Copy application requirements file to the created working directory
 COPY requirements.txt .

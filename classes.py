@@ -1,30 +1,26 @@
 from pydantic import BaseModel
 
-
-class KTPImg(BaseModel):
-    filename: str
-
 class KTPData(BaseModel):
     # id:str
-    # cardImageUrl:str
-    # cardPhoto:bytes or null
-    nik:str or null
-    name:str or null
-    birthPlace:str or null
-    birthDate:str or null
-    gender:str or null
-    bloodType:str or null
-    streetAddress:str or null
-    rtNumber:str or null
-    rwNumber:str or null
+    ktp_img: str
+    face_img:str
+    nik:str
+    name:str
+    birthPlace:str
+    birthDate:str
+    gender:str
+    bloodType:str
+    streetAddress:str
+    rtNumber:str
+    rwNumber:str
     # # kelurahan/desa
-    village:str or null
+    village:str
     # # kecamatan
-    subDistrict:str or null
+    subDistrict:str
     # # kabupaten/kota
-    district:str or null
-    religion:str or null
-    maritalStatus:str or null
-    job:str or null
-    nationality:str or null
-    validUntil:str or null
+    district:str
+    religion:str
+    maritalStatus:str
+    job:str
+    nationality:str
+    validUntil:str

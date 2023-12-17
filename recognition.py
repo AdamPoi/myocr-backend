@@ -20,9 +20,10 @@ CLASS_MAPPING = [
     '{', '|', '}', '~']
 
 model = load_model(MODEL_PATH)
-recognition_results = []
+
 
 def custom_recognize_ktp(ktp_roi):
+  recognition_results = []
   for i,roi in enumerate(ktp_roi):
     padded = cv2.copyMakeBorder(roi, 12, 12, 12, 12, cv2.BORDER_CONSTANT)
 
@@ -71,6 +72,7 @@ def grab_text(ktp_roi,index):
   return ktp_roi[y:y+h, x:x+w]
 
 def tesseract_recognize_ktp(ktp_img):
+  recognition_results = []
   pred = pytesseract.image_to_string(ktp_img,lang='ind',config='--psm 6')
   for word in pred.split("\n"):
     if "”—" in word:

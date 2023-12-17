@@ -12,13 +12,15 @@ from classes import KTPData
 from preprocessing import grab_ktp_data,filter_image,extract_face
 from localization import localize_ktp
 from recognition import custom_recognize_ktp,tesseract_recognize_ktp
-from helper import set_ktp_data_custom,set_ktp_data_tesseract,resize_img,image_to_cv2
+from helper import set_ktp_data_custom,set_ktp_data_tesseract,resize_img,image_to_cv2,image_to_base64
 
 class Settings():
 
     BASE_URL = "http://localhost:8000"
     USE_NGROK = os.environ.get("USE_NGROK", "False") == "True"
 
+class KTPImg():
+  ktp_image:str
 
 settings = Settings()
 
@@ -65,36 +67,50 @@ def recognize_ktp_custom(ktp_image: UploadFile = File(...)):
       raise HTTPException(status_code=422, detail="No upload file sent")
     else:
       ori_img = image_to_cv2(ktp_image)
+      try:
+        (_,_,_,localized_ktp) = localize_ktp(ori_img)
+        resized_img = resize_img(localized_ktp,1280)
+        ktp_img,face_img,ktp_roi = grab_ktp_data(resized_img)
+        ktp_data = custom_recognize_ktp(ktp_roi)
 
-      (_,_,_,localized_ktp) = localize_ktp(ori_img)
-      resized_img = resize_img(localized_ktp,1280)
-      ktp_img,face_img,ktp_roi = grab_ktp_data(resized_img)
-      ktp_data = custom_recognize_ktp(ktp_roi)
-
-      ktp_data = set_ktp_data_custom(ktp_data,ktp_img,face_img)
-      
-      return {'data':ktp_data}
+        ktp_data = set_ktp_data_custom(ktp_data,ktp_img,face_img)
+        
+        return {'data':ktp_data}
+      except:
+        raise HTTPException(status_code=403, detail="KTP Tidak Terdeteksi")
 
 @app.post("/recognize/ktp/tesseract" )
 def recognize_ktp_tesseract(ktp_image: UploadFile = File(...)):
     if not ktp_image:
       raise HTTPException(status_code=422, detail="No upload file sent")
     else:
+      try: 
+        ori_img = image_to_cv2(ktp_image)
+        (_,_,_,localized_ktp) = localize_ktp(ori_img)
+        resized_img = resize_img(localized_ktp,1280)
+        filtered_img = filter_image(resized_img)
+
+        face_img,extracted_img = extract_face(resized_img,filtered_img)
+        ktp_data = tesseract_recognize_ktp(extracted_img)
+
+        ktp_data = set_ktp_data_tesseract(ktp_data,resized_img,face_img)
+        return {'data':ktp_data}
+      except:
+        raise HTTPException(status_code=403, detail="KTP Tidak Terdeteksi")
+
+@app.post("/ktp/image")
+def get_ktp_image(ktp_image: UploadFile = File(...)):
+    if not ktp_image:
+      raise HTTPException(status_code=422, detail="No upload file sent")
+    else:
       ori_img = image_to_cv2(ktp_image)
       (_,_,_,localized_ktp) = localize_ktp(ori_img)
       resized_img = resize_img(localized_ktp,1280)
-      filtered_img = filter_image(resized_img)
-      cv2.imwrite(f'ktp/img/{uuid.uuid1()}.jpg',filtered_img)
+      # KTP_img:KTPImg = KTPImg(ktp_image=)
 
-      face_img,extracted_img = extract_face(resized_img,filtered_img)
-      # ktp_img,face_img,ktp_roi = grab_ktp_data(ktp_image)
-      ktp_data = tesseract_recognize_ktp(extracted_img)
-
-      ktp_data = set_ktp_data_tesseract(ktp_data,resized_img,face_img)
-      
-      return {'data':ktp_data}
-
-
+      return {'data':{
+        'ktp_image':image_to_base64(resized_img)
+        }}
     
 
 if __name__ == "__main__":

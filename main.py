@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile,Path,Response,HTTPException,status
 from fastapi.middleware.cors import CORSMiddleware
+from fuzzy_logic import TsukamotoFuzzyLogic
 from uvicorn import run
 from pydantic_settings import BaseSettings
 import io
@@ -94,7 +95,16 @@ def recognize_ktp_tesseract(ktp_image: UploadFile = File(...)):
       
       return {'data':ktp_data}
 
+tsukamoto = TsukamotoFuzzyLogic()
 
+
+@app.get("/fuzzy")
+def calculate_suitability(
+    age: int, location: int, experience: int, skill: int, ipk: float, org_exp: int
+):
+    # Calculate suitability using the TsukamotoFuzzyLogic class
+    suitability = tsukamoto.apply_rules(age, location, experience, skill, ipk, org_exp)
+    return {"suitability": suitability}
     
 
 if __name__ == "__main__":

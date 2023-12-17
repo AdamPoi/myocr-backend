@@ -1,3 +1,5 @@
+import random
+
 class TsukamotoFuzzyLogic:
     def __init__(self):
         self.age_range = [25, 30]
@@ -58,15 +60,35 @@ class TsukamotoFuzzyLogic:
         suitability = (((rule1 * 0.1) + (rule2 * 0.05) + (rule3 * 0.3) + (rule4 * 0.25) + (rule5 * 0.1) + (rule6 * 0.2)) / (0.1 + 0.05 + 0.3 + 0.25 + 0.1 + 0.2))
         return suitability
 
-# Contoh penggunaan:
-age = 20        # Umur di bawah 25 ; 3
-location = 1    # Lokasi di malang(1) : 1
-experience = 0  # Experience di atas 12 : 3
-skill = 4       # Skill di atas 5 : 3
-ipk = 3.50      # IPK > 3 : 1
-org_exp = 1     # Punya organisasi : 1
+# Generating names and 30 sets of random inputs
+names = ["John", "Alice", "Bob", "Emma", "Michael", "Olivia", "William", "Sophia", "James", "Ava", 
+         "Daniel", "Mia", "Alexander", "Emily", "Jacob", "Ella", "Matthew", "Charlotte", "Luke", "Grace",
+         "Henry", "Chloe", "Ethan", "Liam", "Aiden", "Harper", "David", "Zoe", "Grace", "Lucas"]
 
+inputs = []
+for name in names[:30]:
+    age = random.randint(20, 35)
+    location = random.randint(0, 1)
+    experience = random.randint(0, 15)
+    skill = random.randint(0, 5)
+    ipk = round(random.uniform(2.0, 4.0), 2)
+    org_exp = random.randint(0, 1)
+
+    inputs.append((name, age, location, experience, skill, ipk, org_exp))
+
+# Calculating overall suitability for each input
 tsukamoto = TsukamotoFuzzyLogic()
-hasil = ((tsukamoto.apply_rules(age, location, experience, skill, ipk, org_exp))/2.2)
-rounded_res = round(hasil * 100, 2)
-print(f"Kesesuaian keseluruhan berdasarkan logika fuzzy adalah: {rounded_res}%")
+suitabilities = []
+for input_data in inputs:
+    name, *data = input_data
+    suitability = tsukamoto.apply_rules(*data) / 2.2
+    rounded_res = round(suitability * 100, 2)
+    suitabilities.append((name, rounded_res))
+
+# Sorting the results by suitability in descending order
+sorted_suitabilities = sorted(suitabilities, key=lambda x: x[1], reverse=True)
+
+# Printing the ranked results
+print("Ranking based on overall suitability:")
+for rank, (name, suitability) in enumerate(sorted_suitabilities, 1):
+    print(f"{rank}. {name}: {suitability}%")

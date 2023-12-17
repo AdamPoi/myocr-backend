@@ -26,6 +26,7 @@ class KTPData(BaseModel):
     validUntil:str
 
 class FuzzyData(BaseModel):
+  id:int
   name:str
   age: int
   location: int 

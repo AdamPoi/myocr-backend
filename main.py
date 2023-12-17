@@ -124,8 +124,8 @@ def calculate_suitability(fuzzy_data: list[FuzzyData]):
     for data in fuzzy_data:
       result = ((tsukamoto.apply_rules(data))/2.2)
       rounded_res = round(result * 100, 2)
-      results.append({"name":data.name,"score":rounded_res})
-      
+      results.append({"id":data.id,"name":data.name,"score":rounded_res})
+
     # Sort the results in descending order
     sorted_results = sorted(results, key=lambda x: x['score'], reverse=True)
     

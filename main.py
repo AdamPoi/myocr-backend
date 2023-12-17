@@ -8,11 +8,12 @@ import cv2
 import uuid
 
 
-from classes import KTPData
+from classes import KTPData,FuzzyData
 from preprocessing import grab_ktp_data,filter_image,extract_face
 from localization import localize_ktp
 from recognition import custom_recognize_ktp,tesseract_recognize_ktp
 from helper import set_ktp_data_custom,set_ktp_data_tesseract,resize_img,image_to_cv2,image_to_base64
+from fuzzy_tsukamoto import TsukamotoFuzzyLogic
 
 class Settings():
 
@@ -111,7 +112,24 @@ def get_ktp_image(ktp_image: UploadFile = File(...)):
       return {'data':{
         'ktp_image':image_to_base64(resized_img)
         }}
+
+
+
+@app.get("/fuzzy")
+def calculate_suitability(fuzzy_data: list[FuzzyData]):
+    # Calculate suitability using the TsukamotoFuzzyLogic class
+    tsukamoto = TsukamotoFuzzyLogic()
+    results = []
+
+    for data in fuzzy_data:
+      result = ((tsukamoto.apply_rules(data))/2.2)
+      rounded_res = round(result * 100, 2)
+      results.append({"name":data.name,"score":rounded_res})
+      
+    # Sort the results in descending order
+    sorted_results = sorted(results, key=lambda x: x['score'], reverse=True)
     
+    return {"data": sorted_results}
 
 if __name__ == "__main__":
 	port = int(os.environ.get('PORT', 5001))

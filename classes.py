@@ -24,3 +24,12 @@ class KTPData(BaseModel):
     job:str
     nationality:str
     validUntil:str
+
+class FuzzyData(BaseModel):
+  name:str
+  age: int
+  location: int 
+  experience: int 
+  skill: int
+  ipk: float 
+  org_exp: int

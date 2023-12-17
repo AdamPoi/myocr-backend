@@ -1,4 +1,7 @@
+from classes import FuzzyData
+
 class TsukamotoFuzzyLogic:
+
     def __init__(self):
         self.age_range = [25, 30]
         self.location_range = [0, 1]
@@ -6,6 +9,12 @@ class TsukamotoFuzzyLogic:
         self.skill_range = [0, 3]
         self.ipk_threshold = 3.0
         self.org_range = [0, 1]
+    
+    # init singleton
+    def __new__(cls):
+      if not hasattr(cls, 'instance'):
+        cls.instance = super(TsukamotoFuzzyLogic, cls).__new__(cls)
+      return cls.instance
 
     def fuzzify_age(self, age):
         if age < 25:
@@ -46,27 +55,27 @@ class TsukamotoFuzzyLogic:
         elif org_exp == self.org_range[1]:
             return 1
 
-    def apply_rules(self, age, location, experience, skill, ipk, org_exp):
-        rule1 = self.fuzzify_location(location)
-        rule2 = self.fuzzify_age(age)
-        rule3 = self.fuzzify_experience(experience)
-        rule4 = self.fuzzify_skill(skill)
-        rule5 = self.fuzzify_ipk(ipk)
-        rule6 = self.fuzzify_organizational_exp(org_exp)
+    def apply_rules(self,fuzzy_data:FuzzyData):
+        rule1 = self.fuzzify_location(fuzzy_data.location)
+        rule2 = self.fuzzify_age(fuzzy_data.age)
+        rule3 = self.fuzzify_experience(fuzzy_data.experience)
+        rule4 = self.fuzzify_skill(fuzzy_data.skill)
+        rule5 = self.fuzzify_ipk(fuzzy_data.ipk)
+        rule6 = self.fuzzify_organizational_exp(fuzzy_data.org_exp)
 
         # Weighted average for overall suitability with higher weights for specified criteria
         suitability = (((rule1 * 0.1) + (rule2 * 0.05) + (rule3 * 0.3) + (rule4 * 0.25) + (rule5 * 0.1) + (rule6 * 0.2)) / (0.1 + 0.05 + 0.3 + 0.25 + 0.1 + 0.2))
         return suitability
 
 # Contoh penggunaan:
-age = 20        # Umur di bawah 25 ; 3
-location = 1    # Lokasi di malang(1) : 1
-experience = 0  # Experience di atas 12 : 3
-skill = 4       # Skill di atas 5 : 3
-ipk = 3.50      # IPK > 3 : 1
-org_exp = 1     # Punya organisasi : 1
+# age = 20        # Umur di bawah 25 ; 3
+# location = 1    # Lokasi di malang(1) : 1
+# experience = 0  # Experience di atas 12 : 3
+# skill = 4       # Skill di atas 5 : 3
+# ipk = 3.50      # IPK > 3 : 1
+# org_exp = 1     # Punya organisasi : 1
 
-tsukamoto = TsukamotoFuzzyLogic()
-hasil = ((tsukamoto.apply_rules(age, location, experience, skill, ipk, org_exp))/2.2)
-rounded_res = round(hasil * 100, 2)
-print(f"Kesesuaian keseluruhan berdasarkan logika fuzzy adalah: {rounded_res}%")
+# tsukamoto = TsukamotoFuzzyLogic()
+# hasil = ((tsukamoto.apply_rules(age, location, experience, skill, ipk, org_exp))/2.2)
+# rounded_res = round(hasil * 100, 2)
+# print(f"Kesesuaian keseluruhan berdasarkan logika fuzzy adalah: {rounded_res}%")

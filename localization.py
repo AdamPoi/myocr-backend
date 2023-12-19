@@ -1,69 +1,86 @@
 import numpy as np
 import cv2
+import uuid
 
 from helper import resize_img
 
 
 
 def localize_ktp(image):
-    image = resize_img(image,800)
-    clahed = remove_glare(image,1)
+    for iteration in range(5):
+        # Removing glare
+        clahed = remove_glare(image)
+        # Blurring the image with a variable-sized kernel
+        blur_kernel_size = (10,10)
+        blur = cv2.blur(clahed, blur_kernel_size)
+        # Thresholding to obtain a mask
+        _, mask = cv2.threshold(blur, 180, 255, cv2.THRESH_BINARY)
+        blue, green, red = cv2.split(mask)
 
-    # Mengaburkan gambar dengan kernel 10x10
-    blur = cv2.blur(image, (10, 10))
+        # Set the red and green channels to zero
+        red[:], green[:] = 0, 0
 
-    # Thresholding untuk mendapatkan masker
-    _, mask = cv2.threshold(blur, 180, 255, cv2.THRESH_BINARY)
+        # Merge the modified channels back into an image
+        blue_mask = cv2.merge([blue, green, red])
+        padding = iteration * 10
 
-    # Erosi dan dilasi pada masker untuk membersihkan dan memperbesar area
-    kernel = np.ones((5, 5), np.uint8)
-    mask = cv2.erode(mask, kernel, iterations=3)
-    mask = cv2.dilate(mask, kernel, iterations=5)
+        # Erosion and dilation on the mask to clean and enlarge the area
+        kernel = np.ones((3, 3), np.uint8)
+        mask = cv2.erode(blue_mask, kernel, iterations=0+iteration)
+        mask = cv2.dilate(blue_mask, kernel, iterations=1+iteration)
+
+        padded_mask = cv2.copyMakeBorder(blue_mask, 0 + padding, 0 + padding, 0 + padding, 0 + padding, cv2.BORDER_CONSTANT)
+        # Edge detection using the Canny method
+        lt = 50
+        edges = cv2.Canny(padded_mask, lt, lt * 3)
+
+        # Dilation and erosion on the edges to close edge lines of the card
+        kernel = np.ones((3, 3), np.uint8)
+        edges = cv2.dilate(edges, kernel, iterations=2+iteration)
+        edges = cv2.erode(edges, kernel, iterations=1+iteration)
 
 
-    # Deteksi tepi menggunakan metode Canny
-    lt = 50
-    edges = cv2.Canny(mask, lt, lt * 3)
+        # Finding contours on the edge image
+        contours, img = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        image_contour = image.copy()
 
+        # Finding the contour with the largest area that has 4 points
+        max_area = 0
+        image_area = image.shape[0] * image.shape[1]
+        best_rect = None
 
-    # Dilasi dan erosi pada tepi untuk menutup baris edge kartu
-    kernel = np.ones((5, 5), np.uint8)
-    edges = cv2.dilate(edges, kernel, iterations=6)
-    edges = cv2.erode(edges, kernel, iterations=5)
+        for contour in contours:
+            epsilon = 0.02 * cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, epsilon, True)
 
-    # Menemukan kontur pada tepi gambar
-    contours, img = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    image_contour = image.copy()
+            if len(approx) == 4:
+                area = cv2.contourArea(approx)
+                # find biggest contour
+                if area > max_area and area > image_area / 8:
+                    max_area = area
+                    best_rect = approx
 
-    # Mencari kontur dengan luas terbesar yang memiliki 4 titik
-    max_area = 0
-    best_rect = None
+        # If the best contour is found, break the loop
+        if best_rect is not None:
+            break
+    
+    if best_rect is None : 
+      return localize_with_threshold_blue(image)
 
-    for contour in contours:
-        epsilon = 0.02 * cv2.arcLength(contour, True)
-        approx = cv2.approxPolyDP(contour, epsilon, True)
-
-        if len(approx) == 4:
-            area = cv2.contourArea(approx)
-            if area > max_area:
-                max_area = area
-                best_rect = approx
-
-    # Menggambar kontur pada gambar asli dan kontur terbaik
+    # Drawing contours on the original image and the best contour
     areas = [cv2.contourArea(c) for c in contours]
     max_index = np.argmax(areas)
 
     cv2.drawContours(image_contour, contours, -1, (255, 0, 0), 2)
     cv2.drawContours(image_contour, [contours[max_index]], -1, (0, 0, 255), 2)
 
-    # Melakukan transformasi perspektif jika kontur terdeteksi
+    # Performing perspective transformation if a contour is detected
     warped = image
     if best_rect is not None:
         cv2.drawContours(image_contour, [best_rect], -1, (0, 255, 0), 2)
         warped = four_point_transform(image, best_rect.reshape(4, 2))
-    
 
-    return (mask, edges, image_contour, warped)
+    return  warped
 
 def order_points(pts):
     # Inisialisasi matriks nol untuk menyimpan 4 titik sudut hasil pengurutan
@@ -114,13 +131,64 @@ def four_point_transform(image, pts):
 
     return warped
 
-def remove_glare(image, iteration=1):
+def remove_glare(image,clip_limit=0.5):
     # Menghapus kilau dari gambar menggunakan CLAHE (Contrast Limited Adaptive Histogram Equalization)
     result = image
-    for i in range(iteration):
-        lab = cv2.cvtColor(result, cv2.COLOR_BGR2LAB)
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        lab[..., 0] = clahe.apply(lab[..., 0])
-        result = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+    lab = cv2.cvtColor(result, cv2.COLOR_BGR2LAB)
+    clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(12, 12))
+    lab[..., 0] = clahe.apply(lab[..., 0])
+    result = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
 
     return result
+
+# Alternate four point transform 
+def is_blueish(pixel, blue_threshold=127):
+    blue, green, red = pixel
+    return blue > green + red + blue_threshold
+
+
+def threshold_blue(image, blue_threshold=127):
+    blueish_mask = np.apply_along_axis(is_blueish, axis=2, arr=image, blue_threshold=blue_threshold)
+    
+    result_image = np.where(blueish_mask, 255, 0).astype(np.uint8)
+
+    return result_image
+
+def localize_with_threshold_blue(image):
+  blur = cv2.blur(image, (5,5))
+
+  mask = threshold_blue(blur)
+
+  lt = 50
+  edges = cv2.Canny(mask, lt, lt * 3)
+
+  kernel = np.ones((5, 5), np.uint8)
+
+  dilatation_dst = cv2.dilate(edges, kernel , iterations=4)
+  erosion = cv2.erode(dilatation_dst,kernel,iterations = 3)
+
+  edges = cv2.Canny(erosion, 50, 150)
+
+  contours, img = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+  image_contour = image.copy()
+
+  max_area = 0
+  best_rect = None
+
+  for contour in contours:
+      epsilon = 0.02 * cv2.arcLength(contour, True)
+      approx = cv2.approxPolyDP(contour, epsilon, True)
+
+      if len(approx) == 4:
+          area = cv2.contourArea(approx)
+
+          if area > max_area:
+              max_area = area
+              best_rect = approx
+
+  areas = [cv2.contourArea(c) for c in contours]
+  max_index = np.argmax(areas)
+
+  warped = four_point_transform(image, best_rect.reshape(4, 2))
+
+  return warped

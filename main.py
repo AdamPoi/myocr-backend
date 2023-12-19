@@ -68,36 +68,39 @@ def recognize_ktp_custom(ktp_image: UploadFile = File(...)):
       raise HTTPException(status_code=422, detail="No upload file sent")
     else:
       ori_img = image_to_cv2(ktp_image)
-      try:
-        (_,_,_,localized_ktp) = localize_ktp(ori_img)
-        resized_img = resize_img(localized_ktp,1280)
-        ktp_img,face_img,ktp_roi = grab_ktp_data(resized_img)
-        ktp_data = custom_recognize_ktp(ktp_roi)
+      # try:
+      localized_ktp = localize_ktp(ori_img)
+      resized_img = resize_img(localized_ktp,2560)
+      ktp_img,face_img,ktp_roi = grab_ktp_data(resized_img)
 
-        ktp_data = set_ktp_data_custom(ktp_data,ktp_img,face_img)
-        
-        return {'data':ktp_data}
-      except:
-        raise HTTPException(status_code=403, detail="KTP Tidak Terdeteksi")
+      data = custom_recognize_ktp(ktp_roi)
+      print(data)
+      ktp_data = set_ktp_data_custom(data,ktp_img,face_img)
+      
+      return {'data':ktp_data}
+      # except Exception as error:
+      #   raise HTTPException(status_code=403, detail=f"KTP Tidak Terdeteksi{error}")
 
 @app.post("/recognize/ktp/tesseract" )
 def recognize_ktp_tesseract(ktp_image: UploadFile = File(...)):
     if not ktp_image:
       raise HTTPException(status_code=422, detail="No upload file sent")
     else:
-      try: 
-        ori_img = image_to_cv2(ktp_image)
-        (_,_,_,localized_ktp) = localize_ktp(ori_img)
-        resized_img = resize_img(localized_ktp,1280)
-        filtered_img = filter_image(resized_img)
+      # try: 
+      ori_img = image_to_cv2(ktp_image)
+      localized_ktp = localize_ktp(ori_img)
+      resized_img = resize_img(localized_ktp,2560)
 
-        face_img,extracted_img = extract_face(resized_img,filtered_img)
-        ktp_data = tesseract_recognize_ktp(extracted_img)
+      filtered_img = filter_image(resized_img)
 
-        ktp_data = set_ktp_data_tesseract(ktp_data,resized_img,face_img)
-        return {'data':ktp_data}
-      except:
-        raise HTTPException(status_code=403, detail="KTP Tidak Terdeteksi")
+      face_img,extracted_img = extract_face(resized_img,filtered_img)
+
+      ktp_data = tesseract_recognize_ktp(extracted_img)
+
+      ktp_data = set_ktp_data_tesseract(ktp_data,resized_img,face_img)
+      return {'data':ktp_data}
+      # except Exception as error:
+      #   raise HTTPException(status_code=403, detail="KTP Tidak Terdeteksi{error}")
 
 @app.post("/ktp/image")
 def get_ktp_image(ktp_image: UploadFile = File(...)):
@@ -105,7 +108,7 @@ def get_ktp_image(ktp_image: UploadFile = File(...)):
       raise HTTPException(status_code=422, detail="No upload file sent")
     else:
       ori_img = image_to_cv2(ktp_image)
-      (_,_,_,localized_ktp) = localize_ktp(ori_img)
+      localized_ktp = localize_ktp(ori_img)
       resized_img = resize_img(localized_ktp,1280)
       # KTP_img:KTPImg = KTPImg(ktp_image=)
 
@@ -122,8 +125,15 @@ def calculate_suitability(fuzzy_data: list[FuzzyData]):
     results = []
 
     for data in fuzzy_data:
-      result = ((tsukamoto.apply_rules(data)))
-      results.append({"id":data.id,"name":data.name,"score":result})
+      result,rule1,rule2,rule3,rule4,rule5,rule6 = ((tsukamoto.apply_rules(data)))
+      results.append({"id":data.id,"name":data.name,"score":result,
+        "location":rule1,
+        "age":rule2,
+        "experience":rule3,
+        "skill":rule4,
+        "ipk":rule5,
+        "org_exp":rule6
+      })
 
     # Sort the results in descending order
     sorted_results = sorted(results, key=lambda x: x['score'], reverse=True)

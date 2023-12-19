@@ -65,7 +65,7 @@ class TsukamotoFuzzyLogic:
 
         # Weighted average for overall suitability with higher weights for specified criteria
         suitability = (((rule1 * 0.1) + (rule2 * 0.05) + (rule3 * 0.3) + (rule4 * 0.25) + (rule5 * 0.1) + (rule6 * 0.2)) / (0.1 + 0.05 + 0.3 + 0.25 + 0.1 + 0.2))
-        return suitability
+        return suitability,rule1,rule2,rule3,rule4,rule5,rule6
 
 # Contoh penggunaan:
 # age = 20        # Umur di bawah 25 ; 3

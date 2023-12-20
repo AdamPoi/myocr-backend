@@ -43,7 +43,7 @@ class TsukamotoFuzzyLogic:
             return 1
         elif 3 <= skill <= 5:
             return 2
-        else:
+        elif skill > 5:
             return 3
 
     def fuzzify_ipk(self, ipk):

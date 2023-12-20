@@ -74,7 +74,6 @@ def recognize_ktp_custom(ktp_image: UploadFile = File(...)):
       ktp_img,face_img,ktp_roi = grab_ktp_data(resized_img)
 
       data = custom_recognize_ktp(ktp_roi)
-      print(data)
       ktp_data = set_ktp_data_custom(data,ktp_img,face_img)
       
       return {'data':ktp_data}

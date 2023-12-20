@@ -26,7 +26,7 @@ def filter_image(image):
   median = cv2.medianBlur(gaussian,5)
   thresholded = cv2.threshold(median,180,255,cv2.THRESH_TRUNC + cv2.THRESH_OTSU)[1]
   binary = cv2.threshold(gray,127,255,cv2.THRESH_BINARY_INV)[1]
-  erode = cv2.morphologyEx(binary, cv2.MORPH_ERODE, np.ones((5,5),np.uint8), iterations=1)
+  erode = cv2.morphologyEx(binary, cv2.MORPH_ERODE, np.ones((3,5),np.uint8), iterations=1)
 
   
   return erode

@@ -1,7 +1,6 @@
 from imutils import contours,grab_contours
 import numpy as np
 import cv2
-import uuid
 
 from helper import resize_img
 
@@ -28,7 +27,6 @@ def filter_image(image):
   binary = cv2.threshold(gray,127,255,cv2.THRESH_BINARY_INV)[1]
   erode = cv2.morphologyEx(binary, cv2.MORPH_ERODE, np.ones((3,5),np.uint8), iterations=1)
 
-  
   return erode
 
 

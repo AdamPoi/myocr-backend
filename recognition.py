@@ -1,9 +1,10 @@
+from fastapi import BackgroundTasks
 from tensorflow.keras.models import load_model
 from imutils import contours,grab_contours
 import cv2
 import numpy as np
 import pytesseract
-import uuid
+
 
 
 MODEL_PATH = "models/custom_ocr_6_lstm_bs128_40ep_66_model.h5"
@@ -52,22 +53,20 @@ def recognize_text(text_roi):
   cnts = contours.sort_contours(cnts, method="left-to-right")[0]
 
   for cnt in cnts:
-        x, y, w, h = cv2.boundingRect(cnt)
-        if(w > 4 and h > 20):
-          padded = cv2.copyMakeBorder(text_roi[y:y+h, x:x+w],16,16,16,16, cv2.BORDER_CONSTANT)
-          kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,5))
-          dilate = cv2.morphologyEx(padded, cv2.MORPH_DILATE, kernel, iterations=1)
+    x, y, w, h = cv2.boundingRect(cnt)
+    if(w > 4 and h > 20):
+      padded = cv2.copyMakeBorder(text_roi[y:y+h, x:x+w],16,16,16,16, cv2.BORDER_CONSTANT)
+      kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,5))
+      dilate = cv2.morphologyEx(padded, cv2.MORPH_DILATE, kernel, iterations=1)
 
-          # cv2.imwrite(f'images/ktp/roi_{uuid.uuid1()}.jpg',dilate)
+      padded = cv2.resize(dilate,(28,28))
+      pad = np.array(padded)
+      pad_vector = pad.reshape((-1, 1))
+      padded = pad_vector.reshape(-1, 28, 28, 1)
 
-          padded = cv2.resize(dilate,(28,28))
-          pad = np.array(padded)
-          pad_vector = pad.reshape((-1, 1))
-          padded = pad_vector.reshape(-1, 28, 28, 1)
-
-          pred = model.predict(padded)
-          pred_index = np.argmax(pred)
-          text.append(f'{CLASS_MAPPING[pred_index]}')
+      pred = model.predict(padded)
+      pred_index = np.argmax(pred)
+      text.append(f'{CLASS_MAPPING[pred_index]}')
   return ''.join(text)
 
 def grab_text(ktp_roi,index):
@@ -82,10 +81,9 @@ def grab_text(ktp_roi,index):
   return ktp_roi[y:y+h, x:x+w]
 
 
+
 def tesseract_recognize_ktp(ktp_img):
   recognition_results = []
-  bound = ktp_img.copy()
-  
   pred = pytesseract.image_to_string(ktp_img,lang='ind',config='--psm 6')
   for word in pred.split("\n"):
     if word == "": continue

@@ -20,7 +20,7 @@ def resize_img(img, width):
 def set_ktp_data_custom(data,ktp_img,face_img):
   nik = '-' if len(data) <= 2 else data[2] 
   name = '-' if len(data) <= 3 else data[3] 
-  birth_place = '-'
+  birth_place = '-' if len(data) <= 4 else data[4] 
   birth_date = '-' if len(data) <= 4 else data[4] 
   gender = '-' if len(data) <= 5 else data[5] 
   blood_type = '-' if len(data) <= 6 else data[6] 
@@ -51,8 +51,8 @@ def set_ktp_data_custom(data,ktp_img,face_img):
     job=job,
     nationality=nationality,
     validUntil=validUntil,
-    ktp_img="image_to_base64(ktp_img)",
-    face_img="image_to_base64(face_img)")
+    ktp_img=image_to_base64(ktp_img),
+    face_img=image_to_base64(face_img))
 
   return ktp_data
 

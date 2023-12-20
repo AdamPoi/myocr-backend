@@ -17,11 +17,11 @@ class TsukamotoFuzzyLogic:
       return cls.instance
 
     def fuzzify_age(self, age):
-        if age < 25:
+        if age == 3:
             return 3
-        elif 25 <= age <= 30:
+        elif age == 2:
             return 2
-        elif age > 30:
+        elif age == 1:
             return 1
 
     def fuzzify_location(self, location):
@@ -31,19 +31,19 @@ class TsukamotoFuzzyLogic:
             return 1
 
     def fuzzify_experience(self, experience):
-        if experience < 6:
+        if experience == 1:
             return 1
-        elif 6 <= experience <= 12:
+        elif experience == 2:
             return 2
-        elif experience > 12:
+        elif experience == 3:
             return 3
 
     def fuzzify_skill(self, skill):
-        if skill < 3:
+        if skill == 1:
             return 1
-        elif 3 <= skill <= 5:
+        elif skill == 2:
             return 2
-        elif skill > 5:
+        elif skill == 3:
             return 3
 
     def fuzzify_ipk(self, ipk):

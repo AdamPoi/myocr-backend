@@ -16,7 +16,7 @@ class TsukamotoFuzzyLogic:
         cls.instance = super(TsukamotoFuzzyLogic, cls).__new__(cls)
       return cls.instance
 
-    def fuzzify_age(self, age):
+    def age(self, age):
         if age == 3:
             return 3
         elif age == 2:
@@ -47,7 +47,10 @@ class TsukamotoFuzzyLogic:
             return 3
 
     def fuzzify_ipk(self, ipk):
-        return 1 if ipk >= self.ipk_threshold else 0
+        if org_exp == self.ipk_threshold[0]:
+            return 0
+        elif org_exp == self.ipk_threshold[1]:
+            return 1
 
     def fuzzify_organizational_exp(self, org_exp):
         if org_exp == self.org_range[0]:
@@ -56,16 +59,16 @@ class TsukamotoFuzzyLogic:
             return 1
 
     def apply_rules(self,fuzzy_data:FuzzyData):
-        rule1 = self.fuzzify_location(fuzzy_data.location)
-        rule2 = self.fuzzify_age(fuzzy_data.age)
-        rule3 = self.fuzzify_experience(fuzzy_data.experience)
-        rule4 = self.fuzzify_skill(fuzzy_data.skill)
-        rule5 = self.fuzzify_ipk(fuzzy_data.ipk)
-        rule6 = self.fuzzify_organizational_exp(fuzzy_data.org_exp)
+        rule1 = round(fuzzy_data.location)
+        rule2 = round(fuzzy_data.age)
+        rule3 = round(fuzzy_data.experience)
+        rule4 = round(fuzzy_data.skill)
+        rule5 = round(fuzzy_data.ipk)
+        rule6 = round(fuzzy_data.org_exp)
 
         # Weighted average for overall suitability with higher weights for specified criteria
         suitability = (((rule1 * 0.1) + (rule2 * 0.05) + (rule3 * 0.3) + (rule4 * 0.25) + (rule5 * 0.1) + (rule6 * 0.2)) / (0.1 + 0.05 + 0.3 + 0.25 + 0.1 + 0.2))
-        return suitability,rule1,rule2,rule3,rule4,rule5,rule6
+        return round(suitability,2),rule1,rule2,rule3,rule4,rule5,rule6
 
 # Contoh penggunaan:
 # age = 20        # Umur di bawah 25 ; 3

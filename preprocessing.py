@@ -25,9 +25,9 @@ def filter_image(image):
   median = cv2.medianBlur(gaussian,5)
   thresholded = cv2.threshold(median,180,255,cv2.THRESH_TRUNC + cv2.THRESH_OTSU)[1]
   binary = cv2.threshold(gray,127,255,cv2.THRESH_BINARY_INV)[1]
-  erode = cv2.morphologyEx(binary, cv2.MORPH_ERODE, np.ones((3,5),np.uint8), iterations=1)
+  # erode = cv2.morphologyEx(binary, cv2.MORPH_ERODE, np.ones((3,5),np.uint8), iterations=1)
 
-  return erode
+  return binary
 
 
 def extract_face(ori_img,filtered_img):
@@ -65,7 +65,6 @@ def grab_ktp_roi(cnt,filtered_image):
   if(50 < w and 50 < h < 100):
     roi = filtered_image[y:y+h, x:x+w]
     padded_roi = cv2.copyMakeBorder(roi, 12, 12, 12, 12, cv2.BORDER_CONSTANT)
-    # cv2.imwrite(f'images/ktp/roi_{uuid.uuid1()}.jpg',padded_roi)
 
     ktp_roi.append(padded_roi)
     

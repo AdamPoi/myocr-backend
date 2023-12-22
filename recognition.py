@@ -56,10 +56,9 @@ def recognize_text(text_roi):
     x, y, w, h = cv2.boundingRect(cnt)
     if(w > 4 and h > 20):
       padded = cv2.copyMakeBorder(text_roi[y:y+h, x:x+w],16,16,16,16, cv2.BORDER_CONSTANT)
-      kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,5))
-      dilate = cv2.morphologyEx(padded, cv2.MORPH_DILATE, kernel, iterations=1)
-
-      padded = cv2.resize(dilate,(28,28))
+      # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,5))
+      # dilate = cv2.morphologyEx(ktp_img, cv2.MORPH_DILATE, kernel, iterations=1)
+      padded = cv2.resize(padded,(28,28))
       pad = np.array(padded)
       pad_vector = pad.reshape((-1, 1))
       padded = pad_vector.reshape(-1, 28, 28, 1)
@@ -84,6 +83,8 @@ def grab_text(ktp_roi,index):
 
 def tesseract_recognize_ktp(ktp_img):
   recognition_results = []
+  # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,5))
+  # dilate = cv2.morphologyEx(ktp_img, cv2.MORPH_DILATE, kernel, iterations=1)
   pred = pytesseract.image_to_string(ktp_img,lang='ind',config='--psm 6')
   for word in pred.split("\n"):
     if word == "": continue

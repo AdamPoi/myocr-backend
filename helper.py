@@ -58,42 +58,101 @@ def set_ktp_data_custom(data,ktp_img,face_img):
 
 
 def set_ktp_data_tesseract(data,ktp_img,face_img):
-  ktp_data:KTPData = KTPData()
+  ktp_data:KTPData = KTPData(nik='-',name='-', birthPlace='-',
+  birthDate='-',
+  gender='-',
+  bloodType='-',
+  streetAddress='-',
+  rtNumber='-',
+  rwNumber='-',
+  village='-',
+  subDistrict='-',
+  district='-',
+  religion='-',
+  maritalStatus='-',
+  job='-',
+  nationality='-',
+  validUntil='-',
+  ktp_img='-',
+  face_img='-')
   ktp_data.district = data[0]
   for(i,word) in enumerate(data):
-    if('nik' in word.lower()):
-      ktp_data.nik = word.split(':')[-1].strip()
-    if('nama' in word.lower()):
-      ktp_data.name = word.split(':')[-1].strip()
-    if('tempat' in word.lower() or 'lahir' in word.lower()):
-      birth = word.split(':')[-1]
-      ktp_data.birthPlace = birth.split(',')[0].strip()
-      ktp_data.birthDate = birth.split(',')[1].strip()
-    if('jenis' in word.lower() or 'kelamin' in word.lower()):
-      val = word.split(':')[1]
-      ktp_data.gender = val.strip().split(' ')[0]
-      ktp_data.bloodType = word.split(':')[-1]
-    if('alamat' in word.lower()):
-      ktp_data.streetAddress = word.split(':')[-1]
-    if('rt' in word.lower() or 'rw' in word.lower()):
-      number = word.split(':')[-1]
-      ktp_data.rtNumber = number.split('/')[0].strip()
-      ktp_data.rwNumber = number.split('/')[1].strip()
-    if('kel' in word.lower() or 'desa' in word.lower()):
-      ktp_data.village = word.split(':')[-1].strip()
-    if('kec' in word.lower()):
-      ktp_data.subDistrict = word.split(':')[-1].strip()
-    if('agama' in word.lower()):
-      ktp_data.religion = word.split(':')[-1].strip()
-    if('status' in word.lower()):
-      ktp_data.maritalStatus = word.split(':')[-1].strip()
-    if('pekerjaan' in word.lower()):
-      ktp_data.job = word.split(':')[-1].strip()
-    if('kewarganegaraan' in word.lower()):
-      nationality = word.split(':')[-1].strip()
-      ktp_data.nationality= nationality.split(' ')[0]
-    if('berlaku' in word.lower()):
-      ktp_data.validUntil = word.split(':')[-1].strip()
+    try:
+      if('nik' in word.lower()):
+        ktp_data.nik = word.split(':')[-1].strip()
+    except:
+      ktp_data.nik = '-'
+    try:
+      if('nama' in word.lower()):
+        ktp_data.name = word.split(':')[-1].strip()
+    except:
+      ktp_data.name = '-'
+    try:
+      if('tempat' in word.lower() or 'lahir' in word.lower()):
+        birth = word.split(':')[-1]
+        ktp_data.birthPlace = birth.split(',')[0].strip()
+        ktp_data.birthDate = birth.split(',')[1].strip()
+    except:
+      ktp_data.birthPlace = '-'
+      ktp_data.birthDate = '-'
+    try:
+      if('jenis' in word.lower() or 'kelamin' in word.lower()):
+        val = word.split(':')[1]
+        ktp_data.gender = val.strip().split(' ')[0]
+        ktp_data.bloodType = word.split(':')[-1]
+    except:
+      ktp_data.gender = '-'
+      ktp_data.bloodType = '-'
+    try: 
+      if('alamat' in word.lower()):
+        ktp_data.streetAddress = word.split(':')[-1]
+    except:
+      ktp_data.streetAddress = '-'
+    try:
+      if('rt' in word.lower() or 'rw' in word.lower()):
+        number = word.split(':')[-1]
+        ktp_data.rtNumber = number.split('/')[0].strip()
+        ktp_data.rwNumber = number.split('/')[1].strip()
+    except:
+      ktp_data.rtNumber = '-'
+      ktp_data.rwNumber = '-'
+    try:
+      if('kel' in word.lower() or 'desa' in word.lower()):
+        ktp_data.village = word.split(':')[-1].strip()
+    except:
+      ktp_data.village = '-'
+    try:
+      if('kec' in word.lower()):
+        ktp_data.subDistrict = word.split(':')[-1].strip()
+    except:
+      ktp_data.subDistrict = '-'
+    try:
+      if('agama' in word.lower()):
+        ktp_data.religion = word.split(':')[-1].strip()
+    except:
+      ktp_data.religion = '-'
+    try:
+      if('status' in word.lower()):
+        ktp_data.maritalStatus = word.split(':')[-1].strip()
+    except:
+      ktp_data.maritalStatus = '-'
+    try:
+      if('pekerjaan' in word.lower()):
+        ktp_data.job = word.split(':')[-1].strip()
+    except:
+      ktp_data.job = '-'
+    try:
+      if('kewarganegaraan' in word.lower()):
+        nationality = word.split(':')[-1].strip()
+        ktp_data.nationality= nationality.split(' ')[0]
+    except:
+      ktp_data.nationality = '-'
+    try:
+    
+      if('berlaku' in word.lower()):
+        ktp_data.validUntil = word.split(':')[-1].strip()
+    except:
+      ktp_data.validUntil = '-'
     
   ktp_data.ktp_img = image_to_base64(ktp_img)
   ktp_data.face_img = image_to_base64(face_img)

@@ -29,7 +29,7 @@ def localize_ktp(image):
         mask = cv2.erode(blue_mask, kernel, iterations=0+iteration)
         mask = cv2.dilate(blue_mask, kernel, iterations=1+iteration)
 
-        padded_mask = cv2.copyMakeBorder(blue_mask, 0 + padding, 0 + padding, 0 + padding, 0 + padding, cv2.BORDER_CONSTANT)
+        # padded_mask = cv2.copyMakeBorder(blue_mask, 0 + padding, 0 + padding, 0 + padding, 0 + padding, cv2.BORDER_CONSTANT)
         # Edge detection using the Canny method
         lt = 50
         edges = cv2.Canny(padded_mask, lt, lt * 3)
